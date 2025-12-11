@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Catch the Stars</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+    }
+
+    #gameCanvas {
+      background: #000;
+      display: block;
+      margin: 0 auto;
+      border: 2px solid white;
+    }
+
+    #score {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>⭐ Catch the Stars ⭐</h2>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div id="score">Puntos: 0</div>
+
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let player = { x: 180, y: 550, width: 40, height: 40, speed: 5 };
+  let stars = [];
+  let score = 0;
+  let keys = {};
+
+  document.addEventListener("keydown", e => keys[e.key] = true);
+  document.addEventListener("keyup", e => keys[e.key] = false);
+
+  function spawnStar() {
+    stars.push({
+      x: Math.random() * 360,
+      y: -20,
+      size: 20,
+      speed: 3 + Math.random() * 2
+    });
+  }
+
+  function update() {
+    if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
+    if (keys["ArrowRight"] && player.x < 360) player.x += player.speed;
+
+    for (let star of stars) {
+      star.y += star.speed;
+
+      // colisión
+      if (
+        star.y + star.size > player.y &&
+        star.x < player.x + player.width &&
+        star.x + star.size > player.x
+      ) {
+        score++;
+        stars.splice(stars.indexOf(star), 1);
+        document.getElementById("score").innerText = "Puntos: " + score;
+      }
+    }
+
+    // eliminar estrellas que ya salieron
+    stars = stars.filter(s => s.y < 620);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, 400, 600);
+
+    // jugador
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // estrellas
+    ctx.fillStyle = "yellow";
+    for (let star of stars) {
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
+  setInterval(spawnStar, 700);
+  gameLoop();
+</script>
+
+</body>
+</html>
